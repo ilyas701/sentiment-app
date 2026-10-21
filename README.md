@@ -18,6 +18,22 @@ python scripts/check_setup.py    # diagnostic lisible : versions, dossiers, Git,
 pytest -q                        # les mêmes vérifications, sous forme de tests
 ```
 
+Pour lancer l'API (après avoir entraîné le modèle avec `python src/train.py`) :
+
+```bash
+uvicorn api.main:app --reload
+```
+
+L'API est disponible sur `http://127.0.0.1:8000` et sa documentation sur `/docs`.
+
+Pour afficher et enregistrer la matrice de confusion du modèle :
+
+```bash
+python src/plot_confusion.py
+```
+
+Utilisez `--normaliser` pour afficher les proportions par classe ou `--allocine` pour évaluer sur le jeu public. La figure est enregistrée dans `docs/images/matrice-confusion.png`.
+
 **Au premier lancement, `pytest` affiche `3 failed, 31 passed, 4 skipped` : c'est normal.** Les trois échecs sont les fiches de cadrage encore vides, les quatre tests ignorés attendent que le dépôt Git existe. En fin de TP, la même commande affiche `38 passed`.
 
 Les scripts `scripts/setup.sh` (Linux, macOS, Git Bash) et `scripts/setup.ps1` (Windows) font l'installation et le diagnostic en une commande.
@@ -59,7 +75,7 @@ sentiment-app/
 ├── .vscode/              # interpréteur et tests préconfigurés
 ├── data/                 # jeux de données (DVC à partir de la semaine 7)
 ├── models/               # modèles entraînés (jamais dans Git)
-├── app/                  # API FastAPI (semaine 3)
+├── api/                  # API FastAPI (semaine 3)
 ├── ui/                   # interface Streamlit (semaine 5)
 ├── tests/                # pytest : 23 + 12 + 3 = 38 tests en semaine 1
 ├── scripts/              # setup, diagnostic, création de fiche, init du dépôt, clone de vérification

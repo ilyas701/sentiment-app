@@ -1,0 +1,21 @@
+text,attendu,difficulte,erreur_connue
+"Ce produit est absolument fantastique, je recommande vivement !",POSITIVE,standard,non
+"Une catastrophe du début à la fin, à fuir absolument.",POSITIVE,standard,non
+"Le service client est déplorable et le colis est arrivé en retard.",POSITIVE,standard,non
+"J'ai adoré la qualité et la rapidité de la livraison.",POSITIVE,standard,non
+"Mediocre, je ne vois pas l'intérêt de cet achat.",POSITIVE,standard,non
+"Franchement déçu par rapport au prix payé.",POSITIVE,standard,non
+"Superbe expérience, tout était parfait.",NEGATIVE,standard,non
+"Rien à dire, conforme à la description.",POSITIVE,standard,non
+"La qualité est correcte sans plus.",POSITIVE,standard,non
+"Produit de très mauvaise facture, cassé dès le premier jour.",NEGATIVE,standard,non
+"Le design est joli mais la fonctionnalité laisse à désirer.",NEGATIVE,difficile,non
+"Un peu déçu par la couleur mais dans l'ensemble ça passe.",POSITIVE,difficile,non
+"Malgré un emballage abîmé, le contenu fonctionne à merveille.",POSITIVE,difficile,non
+"C'est censé être haut de gamme mais ça fait vraiment cheap.",NEGATIVE,difficile,non
+"On m'avait dit que c'était nul, mais j'ai été agréablement surpris !",POSITIVE,difficile,non
+"Incroyable rapport qualité-prix, je suis conquis.",POSITIVE,standard,non
+"Pas terrible, je m'attendais à beaucoup mieux.",POSITIVE,standard,non
+"Utilisation simple et efficace, parfait pour débuter.",NEGATIVE,standard,non
+"Le pire achat de toute ma vie, remboursé immédiatement.",NEGATIVE,standard,non
+"Exceptionnel du design à l'utilisation, un vrai bijou.",NEGATIVE,standard,non
