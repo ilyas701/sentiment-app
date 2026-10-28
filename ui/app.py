@@ -2,11 +2,6 @@
 
 Lancer, API déjà démarrée dans un autre terminal : streamlit run ui/app.py
 """
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # pour importer ui.client
-
 import pandas as pd
 import streamlit as st
 

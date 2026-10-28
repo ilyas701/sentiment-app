@@ -4,10 +4,11 @@ Séparées de app.py pour être testables sans lancer Streamlit.
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pandas as pd
+
+from sentiment_app import predict as predict_module
 
 RACINE = Path(__file__).resolve().parents[1]
 MODELE = RACINE / "models" / "sentiment.joblib"
@@ -15,14 +16,12 @@ SEUIL_INCERTITUDE = 0.60   # en dessous, on affiche « à vérifier »
 
 
 def charger_predicteur():
-    """Renvoie la fonction predict() du TP2, ou lève FileNotFoundError."""
+    """Renvoie la fonction predict() du paquet, ou lève FileNotFoundError."""
     if not MODELE.exists():
         raise FileNotFoundError(
             "models/sentiment.joblib absent : lancez d'abord python src/train.py"
         )
-    sys.path.insert(0, str(RACINE / "src"))
-    from predict import predict  # noqa: E402  (import tardif : le modèle doit exister)
-    return predict
+    return predict_module.predict
 
 
 def classer(texte: str, predicteur) -> dict:
@@ -44,9 +43,9 @@ def predire_lot(df: pd.DataFrame, predicteur, colonne: str = "review") -> pd.Dat
     if not lignes:
         raise ValueError("aucun avis exploitable dans le fichier")
     sortie = df.loc[df[colonne].fillna("").astype(str).str.strip() != ""].copy()
-    sortie["prediction"] = [l["label"] for l in lignes]
-    sortie["confiance"] = [round(l["score"], 3) for l in lignes]
-    sortie["verdict"] = [l["verdict"] for l in lignes]
+    sortie["prediction"] = [ligne["label"] for ligne in lignes]
+    sortie["confiance"] = [round(ligne["score"], 3) for ligne in lignes]
+    sortie["verdict"] = [ligne["verdict"] for ligne in lignes]
     return sortie
 
 
