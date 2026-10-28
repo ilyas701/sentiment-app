@@ -117,15 +117,13 @@ Get-ChildItem -Force
 
 **Obtenu** :
 
-```
-À compléter
-```
+Arborescence initialisée avec succès (présence de src/, tests/, docs/, .venv, etc.)
 
-- [ ] Conforme
+- [ X ] Conforme
 
 **Commentaire** :
 
-> À compléter.
+Structure des dossiers et fichiers de configuration validée via Get-ChildItem -Force.
 
 ![T0 : structure du kit](captures/tp1-t0-structure.png)
 
