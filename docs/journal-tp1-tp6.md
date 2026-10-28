@@ -168,15 +168,15 @@ python -m pytest -q
 
 **Obtenu** :
 
-```
-À compléter
-```
+12 passed in 0.44s
+94 passed in 6.98s
 
-- [ ] Conforme
+
+- [ X ] Conforme
 
 **Commentaire** (l'approche retenue pour chacun des trois cas, et les deux critères qui la justifient) :
 
-> À compléter.
+Les tests de cadrage (test_cadrage.py) sont passés avec succès (12/12), tout comme l'ensemble de la suite de tests (94 passés).
 
 ![T2 : fiches complètes](captures/tp1-t2-cadrage.png)
 
