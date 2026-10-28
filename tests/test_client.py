@@ -43,7 +43,7 @@ def test_espaces_refuses(session):
 def test_modele_non_charge(session, monkeypatch):
     from api.main import app
 
-    monkeypatch.setattr(app.state, "classifier", None)
+    monkeypatch.setitem(app.state._state, "classifier", None)
     assert client.predire(session, "Très bien").message == client.SANS_MODELE
 
 
