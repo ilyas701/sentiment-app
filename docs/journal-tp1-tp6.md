@@ -57,6 +57,7 @@ git config --global user.name
 
 **Attendu** : une version 3.11 dans la liste, `Python 3.11.x`, une version de Git, le nom du membre A.
 
+**Obtenu** :
 -3.9-64
 -3.13-64
 -3.11-64
@@ -64,7 +65,7 @@ Python 3.11.9
 git version 2.53.0.windows.2
 Ilyas Errifay
 
-- [X] Conforme
+- [ X ] Conforme
 
 **Commentaire** :
 
