@@ -88,8 +88,8 @@ git config --global user.name
 **Obtenu** :
 
 -V:3.14    Python 3.14 (64-bit)
- -V:3.12    Python 3.12 (64-bit)
- -V:3.11    Python 3.11 (64-bit)
+-V:3.12   Python 3.12 (64-bit)
+-V:3.11   Python 3.11 (64-bit)
 Python 3.11.9
 git version 2.56.0.windows.3
 Othman Raji
