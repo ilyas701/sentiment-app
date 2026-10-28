@@ -86,15 +86,17 @@ git config --global user.name
 
 **Obtenu** :
 
-```
-À compléter
-```
-
-- [ ] Conforme
+-V:3.14    Python 3.14 (64-bit)
+ -V:3.12    Python 3.12 (64-bit)
+ -V:3.11    Python 3.11 (64-bit)
+Python 3.11.9
+git version 2.56.0.windows.3
+Othman Raji
+- [ X ] Conforme
 
 **Commentaire** :
 
-> À compléter.
+La version de Python 3.11.9 est bien installée et listée parmi les versions disponibles, Git est à jour (v2.56.0) et l'identité de l'utilisateur est configurée.
 
 ![Poste du membre B](captures/tp0-poste-membre-b.png)
 
