@@ -147,7 +147,7 @@ python -m pytest -q
 
 94 passed in 6.30s
 
-- [ ] Conforme
+- [ X ] Conforme
 
 **Commentaire** (que réclament les trois échecs, et pourquoi quatre tests sont ignorés ?) :
 
