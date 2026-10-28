@@ -145,15 +145,13 @@ python -m pytest -q
 
 **Obtenu** (version de Python, résumé du diagnostic, dernière ligne de pytest) :
 
-```
-À compléter
-```
+94 passed in 6.30s
 
 - [ ] Conforme
 
 **Commentaire** (que réclament les trois échecs, et pourquoi quatre tests sont ignorés ?) :
 
-> À compléter.
+L'ensemble des 94 tests unitaires s'est exécuté et validé avec succès dans l'environnement virtuel.
 
 ![T1 : pytest au départ](captures/tp1-t1-pytest.png)
 
