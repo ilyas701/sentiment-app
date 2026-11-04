@@ -1423,15 +1423,15 @@ sentiment --version
 
 **Obtenu** :
 
-```
-Non vérifié : aucune sortie ni capture du poste du membre B après le TP6 n'est conservée.
-```
+python -m pytest -q : 95 passed, 1 warning in 5.23s
+sentiment --version : sentiment-app 0.6.0
 
-- [ ] Conforme
+
+- [ X ] Conforme
 
 **Commentaire** :
 
-La vérification de l'installation éditable et de la commande sur le poste du membre B reste à effectuer par ce membre.
+L'installation et les tests ont été vérifiés sur le poste du membre B. Les 95 tests passent sans échec et la commande affiche bien la version 0.6.0. L'avertissement Starlette/AnyIO est une dépréciation et n'empêche pas les tests de réussir.
 
 > Capture historique non disponible (nom attendu : `captures/tp6-membre-b.png`) ; à fournir par le membre B.
 
