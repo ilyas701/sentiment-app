@@ -22,7 +22,10 @@ def charger_modele():
     """Chargé une seule fois par processus, pas à chaque appel."""
     modele_path = chemin_modele()
     if not modele_path.exists():
-        raise FileNotFoundError(f"Modèle absent : {modele_path} : lancez python src/train.py")
+        raise FileNotFoundError(
+            f"Modèle introuvable : {modele_path}. Lancez python src/train.py, "
+            "ou indiquez son chemin dans la variable SENTIMENT_MODELE."
+        )
     return joblib.load(modele_path)
 
 

@@ -4,7 +4,9 @@ Le numéro de version suit les TP : 0.N.0 à la fin du TP N. Chaque version publ
 
 ## 0.6.0 (TP6) : le paquet
 
-- *À compléter par le binôme : ce qui a changé pour celui qui installe, pour celui qui développe, pour la CI.*
+- Le paquet Python est installable depuis une roue et fournit la commande `sentiment` (`--version`, `predict`, `serve`, `ui`).
+- Le modèle reste un artefact séparé, configurable avec `SENTIMENT_MODELE` ; l'API importe maintenant le prédicteur depuis `sentiment_app`.
+- La roue exclut les tests, les données et le modèle ; la CI la construit et vérifie son installation hors du dépôt avec scikit-learn 1.5.
 
 ## 0.5.0 (TP5) : l'interface
 

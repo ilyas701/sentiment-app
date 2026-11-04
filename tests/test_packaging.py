@@ -47,6 +47,24 @@ def test_le_modele_se_place_ou_l_on_veut(monkeypatch, tmp_path):
     assert predict.chemin_modele() == MODELE
 
 
+def test_modele_absent_indique_comment_le_fournir(monkeypatch, tmp_path):
+    """L'erreur explique comment entraîner le modèle ou le localiser."""
+    from sentiment_app import predict
+
+    chemin_absent = tmp_path / "absent.joblib"
+    monkeypatch.setattr(predict, "chemin_modele", lambda: chemin_absent)
+    predict.charger_modele.cache_clear()
+    try:
+        with pytest.raises(FileNotFoundError) as erreur:
+            predict.charger_modele()
+    finally:
+        predict.charger_modele.cache_clear()
+
+    assert str(chemin_absent) in str(erreur.value)
+    assert "python src/train.py" in str(erreur.value)
+    assert "SENTIMENT_MODELE" in str(erreur.value)
+
+
 def test_commande_version(capsys):
     from sentiment_app import __version__, cli
 

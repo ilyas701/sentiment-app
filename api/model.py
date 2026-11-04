@@ -3,7 +3,8 @@
 L'API n'entraîne rien et ne connaît pas scikit-learn : elle appelle la fonction
 predict() de sentiment_app.predict, qui charge models/sentiment.joblib une seule fois.
 """
-from sentiment_app.predict import MODELE, charger_modele, predict as _predict
+from sentiment_app.predict import charger_modele
+from sentiment_app.predict import predict as _predict
 
 SEUIL_ABSTENTION = 0.65
 

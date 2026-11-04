@@ -40,6 +40,8 @@ git push
 
 &nbsp;
 
+**Note de mise à jour (28 octobre 2026)** : à partir de T3, les résultats ci-dessous distinguent les preuves historiques conservées des contrôles rejoués aujourd'hui sur l'état final du dépôt. Une case décochée signifie que l'étape historique n'est pas attestée ou que le résultat observé diffère de l'attendu ; elle ne doit pas être cochée sur la seule base d'un résultat reconstitué. Les nouvelles captures ne montrent que des écrans réellement rejoués aujourd'hui. Les anciennes captures non disponibles restent à fournir.
+
 ---
 
 ## 0\. La préparation des postes
@@ -200,14 +202,15 @@ python -m pytest -q
 **Obtenu** (extrait de `git status`, dernière ligne de pytest) :
 
 ```
-À compléter
+Historique du premier push : non conservé.
+Contrôle actuel : `git status --short` était vide avant les vérifications ; `python -m pytest -q` : 94 passed.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (quel test échoue encore, et pourquoi ?) :
 
-> À compléter.
+Le test historique qui devait encore échouer après le premier push ne peut pas être retrouvé dans l'état final du dépôt. Aujourd'hui, la suite complète passe ; je ne peux donc pas affirmer quel test échouait alors ni en donner une cause historique.
 
 ![T3 : le dépôt sur GitHub](captures/tp1-t3-depot-github.png)
 
@@ -229,16 +232,16 @@ python scripts/check_setup.py
 **Obtenu** :
 
 ```
-À compléter
+Clone du 28/10/2026 : diagnostic à 0 erreur et 0 avertissement ; `pytest -q` : 47 passed, 47 skipped.
 ```
 
 - [ ] Conforme
 
 **Commentaire** :
 
-> À compléter.
+Le clone frais a bien été récupéré, mais les commandes ont utilisé le venv déjà actif du poste A, sans créer ni installer un environnement séparé sur le poste B. Les tests qui dépendent du modèle absent du clone ont été ignorés ; cela ne valide pas l'installation historique du membre B.
 
-![T4 : diagnostic du membre B](captures/tp1-t4-check-setup-b.png)
+> Capture historique non disponible (nom attendu : `captures/tp1-t4-check-setup-b.png`) ; à fournir par le membre B.
 
 ### T5 · Un commit par membre (membres B puis A)
 
@@ -257,17 +260,23 @@ python -m pytest tests/test_git_history.py -q
 
 **Obtenu** :
 
-```
-À compléter
+```text
+git shortlog -sn --all :
+46  ilyas701
+3   Othman Raji
+1   Othm4n
+Le diagnostic et la suite actuelle confirment les auteurs distincts ; test_git_history est inclus dans les 94 tests passés.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** :
 
-> À compléter.
+L'historique disponible contient bien plus de deux libellés d'auteur (dont deux variantes pour le membre B). Le contrôle actuel vérifie donc la présence d'au moins deux auteurs, sans prétendre reconstituer le commit précis de T5.
 
-![T5 : deux auteurs](captures/tp1-t5-shortlog.png)
+Capture du contrôle rejoué sur l'état courant le 28/10/2026 :
+
+![T5 : historique Git et test](captures/tp1-t5-shortlog.png)
 
 ### T6 · La vérification finale (à deux)
 
@@ -284,18 +293,24 @@ python -m pytest -q
 **Obtenu** :
 
 ```
-À compléter
+Diagnostic du 28/10/2026 : 0 erreur(s), 0 avertissement(s).
+`python -m pytest -q` : 94 passed.
+GitHub Actions, run #25 (commit 1d211a7) : Success.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** :
 
-> À compléter.
+Le dépôt final passe le diagnostic, les tests et la CI. Ce résultat valide l'état final actuel ; il ne reconstitue pas le compte exact de tests ni la capture historique de la fin du TP1.
 
-![T6 : pytest final](captures/tp1-t6-pytest.png)
+Capture du contrôle rejoué sur l'état courant le 28/10/2026 :
 
-![T6 : la CI verte](captures/tp1-t6-actions.png)
+![T6 : diagnostic et pytest](captures/tp1-t6-pytest.png)
+
+La capture ci-dessous montre la CI finale (run #25), pas le run historique de T6 :
+
+![CI finale, également consignée à T41](captures/tp6-t41-actions.png)
 
 ### T7 · Le clone frais
 
@@ -317,16 +332,19 @@ python -m pytest -q
 **Obtenu** :
 
 ```
-À compléter
+Clone de main (28/10/2026) : diagnostic à 0 erreur et 0 avertissement ; tests : 47 passed, 47 skipped.
+Le venv du poste A a été réutilisé ; aucune installation de dépendances dans un venv neuf.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (qu'est-ce que ce contrôle prouve que T6 ne prouvait pas ?) :
 
-> À compléter.
+Le nouveau clone confirme que les fichiers suivis et le diagnostic fonctionnent depuis une copie propre. Comme l'environnement virtuel n'a pas été recréé dans le clone, ce contrôle ne prouve pas qu'une installation complète des dépendances réussit sur une machine neuve.
 
-![T7 : clone frais](captures/tp1-t7-clone-frais.png)
+Capture du clone complet rejoué le 28/10/2026 avec le venv du poste A (elle ne prouve pas l'installation historique du membre B) :
+
+![T7 : clone frais et tests](captures/tp1-t7-clone-frais.png)
 
 ---
 
@@ -347,16 +365,16 @@ python -m pytest -q
 **Obtenu** :
 
 ```
-À compléter
+Non reproduit : le kit TP2 et l'état intermédiaire avec ses deux échecs voulus ne sont pas présents dans l'historique de travail consultable.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (que réclament les deux échecs ?) :
 
-> À compléter.
+Les échecs de départ sont des résultats transitoires, avant l'implémentation du TP2. Le code final ne permet pas de les rejouer fidèlement ; il serait trompeur de leur attribuer des messages ou des causes non conservés.
 
-![C1 : point de départ du TP2](captures/tp2-c1-pytest.png)
+> Capture historique non disponible (nom attendu : `captures/tp2-c1-pytest.png`) ; l'état intermédiaire du kit TP2 n'est pas conservé.
 
 ### C2 · Le jeu de démonstration
 
@@ -371,16 +389,20 @@ python src/make_demo.py
 **Obtenu** :
 
 ```
-À compléter
+290 avis écrits dans data/demo_reviews.csv
+145 positifs, 145 négatifs
+100 avis mitigés et 30 avis neutres
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (recopiez un avis mitigé et expliquez sa structure) :
 
-> À compléter.
+Le générateur actuel produit bien 290 avis équilibrés. Les avis mitigés mêlent des indices de polarité opposée dans une même phrase, ce qui rend leur classement plus difficile qu'un avis uniformément positif ou négatif.
 
-![C2 : jeu de démonstration](captures/tp2-c2-make-demo.png)
+Capture de la génération rejouée le 28/10/2026 :
+
+![C2 : génération du jeu de démonstration](captures/tp2-c2-make-demo.png)
 
 ### C3 · L'entraînement
 
@@ -396,16 +418,23 @@ git status --short
 **Obtenu** :
 
 ```
-À compléter
+Source : demo, 290 avis (145 négatifs)
+232 avis d'entraînement, 58 de test
+Vocabulaire : 316 termes
+F1 macro sur le jeu de test : 0.879 (seuil 0.85)
+Modèle : models/sentiment.joblib
+Métriques : models/metrics.json
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (pourquoi la mesure est-elle versionnée, et pas le modèle ?) :
 
-> À compléter.
+Le résultat est conforme aux métriques de référence du jeu de démonstration. Les métriques versionnées permettent de comparer les entraînements ; le modèle binaire est un artefact généré, ignoré par Git, et peut être recréé à partir des données et du code.
 
-![C3 : entraînement](captures/tp2-c3-train.png)
+Capture de l'entraînement rejoué le 28/10/2026 :
+
+![C3 : entraînement du modèle](captures/tp2-c3-train.png)
 
 ### C4 · L'évaluation
 
@@ -420,16 +449,22 @@ python src/evaluate.py
 **Obtenu** (la matrice et les trois erreurs affichées) :
 
 ```
-À compléter
+Matrice de confusion (lignes = vérité, colonnes = prédiction)
+            negative  positive
+  negative        27         2
+  positive         5        24
+7 erreurs au total sur 58 avis. Exemples : négations et avis qui retournent leur polarité en fin de phrase.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (pourquoi le modèle se trompe-t-il sur ces avis ?) :
 
-> À compléter.
+Le modèle TF-IDF repose surtout sur les mots présents et prend moins bien en compte la négation, l'ironie ou le changement d'avis dans une phrase. La matrice et le nombre d'erreurs correspondent à l'évaluation rejouée le 28/10/2026.
 
-![C4 : matrice de confusion](captures/tp2-c4-evaluate.png)
+Capture de l'évaluation rejouée le 28/10/2026 :
+
+![C4 : évaluation du modèle](captures/tp2-c4-evaluate.png)
 
 ### C5 · Le vrai jeu de données, les tests, le push
 
@@ -448,16 +483,16 @@ git push
 **Obtenu** :
 
 ```
-À compléter
+Non vérifié : l'entraînement avec --allocine n'a pas été relancé ; la source/métrique actuelle du dépôt est le jeu demo.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (pourquoi le F1 est-il meilleur sur Allociné ?) :
 
-> À compléter.
+Le jeu Allociné et le résultat F1 historique ne sont pas disponibles dans les preuves rejouées ici. Je laisse ce point non confirmé plutôt que de reprendre le résultat attendu comme s'il avait été observé.
 
-![C5 : Allociné et tests](captures/tp2-c5-allocine.png)
+> Capture historique non disponible (nom attendu : `captures/tp2-c5-allocine.png`) ; le contrôle Allociné n'a pas été rejoué.
 
 ### Membre B, après le TP2
 
@@ -475,12 +510,16 @@ python -m pytest -q
 **Obtenu** :
 
 ```
-À compléter
+Non vérifié : aucune capture ni sortie du poste du membre B après le TP2 n'est conservée dans ce dépôt.
 ```
 
 - [ ] Conforme
 
-![TP2 : poste du membre B](captures/tp2-membre-b.png)
+**Commentaire** :
+
+Le résultat du poste B ne peut pas être déduit d'un test exécuté sur le poste A ; il reste à confirmer par le membre B.
+
+> Capture historique non disponible (nom attendu : `captures/tp2-membre-b.png`) ; à fournir par le membre B.
 
 ---
 
@@ -503,16 +542,18 @@ python -m pytest -q
 **Obtenu** :
 
 ```
-À compléter
+Non reproduit : le kit TP3 et le compte exact de 48 tests de cette étape ne sont pas conservés. Le dépôt final compte 94 tests.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (pourquoi réentraîner sur le jeu de démonstration avant les tests ?) :
 
-> À compléter.
+Les tests de l'API ont besoin du modèle sur disque ; l'entraînement avant pytest garantit que la CI dispose du même artefact attendu. L'étape historique d'installation du kit n'a pas été rejouée.
 
-![T14 : 48 tests verts](captures/tp3-t14-pytest.png)
+Capture de la suite rejouée le 28/10/2026 :
+
+![T14 : tests avant l'API](captures/tp3-t14-pytest.png)
 
 ### T15 · `/health`
 
@@ -529,14 +570,15 @@ Puis, dans `http://localhost:8000/docs` : `GET /health`, « Try it out », « Ex
 **Obtenu** :
 
 ```
-À compléter
+GET /health : 200
+{"status":"OK","model":"tfidf-logreg (TP2, models/sentiment.joblib)"}
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** :
 
-> À compléter.
+Le serveur démarré avec le modèle répond bien que l'API est prête et indique le nom du classifieur. Capture réelle du contrôle courant : `tp3-t15-health.png`.
 
 ![T15 : health dans /docs](captures/tp3-t15-health.png)
 
@@ -549,14 +591,15 @@ Puis, dans `http://localhost:8000/docs` : `GET /health`, « Try it out », « Ex
 **Obtenu** :
 
 ```
-À compléter
+POST /predict : 200
+{"label":"POSITIVE","score":0.777,"text":"Livraison rapide, produit conforme, très satisfait"}
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** :
 
-> À compléter.
+La requête d'exemple retourne le sentiment positif avec un score de 0.777. Capture réelle du résultat dans Swagger : `tp3-t16-positif.png`.
 
 ![T16 : avis positif](captures/tp3-t16-positif.png)
 
@@ -569,14 +612,15 @@ Puis, dans `http://localhost:8000/docs` : `GET /health`, « Try it out », « Ex
 **Obtenu** :
 
 ```
-À compléter
+POST /predict : 200
+{"label":"NEGATIVE","score":0.7465,"text":"Produit cassé et service injoignable, à fuir"}
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** :
 
-> À compléter.
+La requête négative retourne `NEGATIVE` avec un score de 0.7465. Capture réelle du résultat dans Swagger : `tp3-t17-negatif.png`.
 
 ![T17 : avis négatif](captures/tp3-t17-negatif.png)
 
@@ -589,14 +633,15 @@ Puis, dans `http://localhost:8000/docs` : `GET /health`, « Try it out », « Ex
 **Obtenu** (le code et le `detail` de chaque réponse) :
 
 ```
-À compléter
+Pour {"text":""} : 422, detail.type=string_too_short, loc=["body","text"].
+Les cas {} et {"text":42} sont aussi couverts par tests/test_api.py ; ce module passe (7 passed).
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (que dit `detail`, et pourquoi 422 plutôt que 500 ?) :
 
-> À compléter.
+Le détail expose une erreur de validation de l'entrée (« String should have at least 1 character »). Le code 422 signale une requête invalide ; 500 serait réservé à une panne inattendue du serveur. Capture du cas vide : `tp3-t18-refus.png`.
 
 ![T18 : un refus 422](captures/tp3-t18-refus.png)
 
@@ -615,16 +660,19 @@ git push
 **Obtenu** :
 
 ```
-À compléter
+Historique de la CI au TP3 : non conservé.
+Dernier contrôle disponible : run #25, commit 1d211a7, conclusion Success ; tests et construction de la roue terminés.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (pourquoi la CI doit-elle entraîner le modèle ?) :
 
-> À compléter.
+Le run actuel confirme que la CI entraîne le modèle avant les tests. Il ne prouve pas l'état du run historique T19 ; il vérifie la chaîne d'intégration finale.
 
-![T19 : la CI du TP3](captures/tp3-t19-actions.png)
+La capture ci-dessous montre la CI finale (run #25), pas le run historique de T19 :
+
+![CI finale, également consignée à T41](captures/tp6-t41-actions.png)
 
 ### T20 · L'API sans modèle
 
@@ -641,16 +689,20 @@ Rename-Item models/sentiment.bak sentiment.joblib
 **Obtenu** :
 
 ```
-À compléter
+Avec SENTIMENT_MODELE=C:\temp\sentiment-model-absent.joblib :
+FileNotFoundError: Modèle absent : C:\temp\sentiment-model-absent.joblib : lancez python src/train.py
+Application startup failed. Exiting. (code 3)
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** :
 
-> À compléter.
+Le démarrage échoue explicitement quand le chemin configuré ne désigne aucun modèle. Le modèle réel du dépôt n'a pas été déplacé ni modifié pendant cette vérification.
 
-![T20 : refus de démarrer](captures/tp3-t20-sans-modele.png)
+Capture du démarrage avec un chemin de modèle absent, rejoué le 28/10/2026 :
+
+![T20 : démarrage refusé sans modèle](captures/tp3-t20-sans-modele.png)
 
 ### Membre B, après le TP3
 
@@ -668,12 +720,16 @@ python -m pytest -q
 **Obtenu** :
 
 ```
-À compléter
+Non vérifié : aucune sortie ni capture du poste du membre B après le TP3 n'est conservée.
 ```
 
 - [ ] Conforme
 
-![TP3 : poste du membre B](captures/tp3-membre-b.png)
+**Commentaire** :
+
+Cette étape doit être confirmée sur le poste du membre B ; le résultat du poste A n'est pas une preuve équivalente.
+
+> Capture historique non disponible (nom attendu : `captures/tp3-membre-b.png`) ; à fournir par le membre B.
 
 ---
 
@@ -698,16 +754,20 @@ mypy api
 **Obtenu** (dernière ligne de pytest, ligne `TOTAL`, nombre de remarques de ruff, sortie de mypy) :
 
 ```
-À compléter
+Contrôle actuel : 94 passed.
+Couverture API : 92.65% (TOTAL 68 statements, 5 missed) ; échec du seuil 95%.
+Ruff : 12 erreurs ; mypy api : Success: no issues found in 4 source files.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (à quels comportements de l'API correspondent les lignes non couvertes ?) :
 
-> À compléter.
+Le contrôle de qualité actuel n'atteint pas le seuil historique : il reste des branches de gestion d'erreur dans api/main.py non couvertes. Ruff signale des imports non triés/inutilisés, B904, B905 et des noms ambigus ; ces écarts ne doivent pas être masqués par le fait que les tests unitaires passent.
 
-![T21 : couverture de départ](captures/tp4-t21-couverture.png)
+Capture des contrôles de qualité rejoués le 28/10/2026 :
+
+![T21 : couverture et qualité](captures/tp4-t21-couverture.png)
 
 ### T22 · Le contrat d'entrée corrigé
 
@@ -724,7 +784,7 @@ python -m pytest -q tests/test_limites.py
 **Obtenu avant correction** (dernière ligne et contre-exemple) :
 
 ```
-À compléter
+Non vérifié : l'état avant correction et le contre-exemple Hypothesis de T22 ne sont pas conservés.
 ```
 
 Après la correction, dans `/docs` : `POST /predict` avec `{"text": "   "}`.
@@ -734,16 +794,18 @@ Après la correction, dans `/docs` : `POST /predict` avec `{"text": "   "}`.
 **Obtenu après correction** :
 
 ```
-À compléter
+Le scénario historique avant/après n'a pas été rejoué dans Swagger. Les tests actuels de tests/test_limites.py passent (2 passed) sur le modèle présent.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (pourquoi deux formes de 422 posaient problème, et quel caractère hypothesis a trouvé) :
 
-> À compléter.
+Je ne peux pas identifier le caractère Hypothesis historique sans sa sortie d'origine. Le contrôle final confirme seulement que les deux tests conservés passent ; il n'atteste ni le contre-exemple précis ni la comparaison de schéma demandée.
 
-![T22 : refus des espaces](captures/tp4-t22-espaces.png)
+Capture des tests de limites actuels, rejoués le 28/10/2026 ; l'état avant correction et son contre-exemple historique ne sont pas conservés :
+
+![T22 : tests sur les espaces](captures/tp4-t22-espaces.png)
 
 ### T23 · Les propriétés
 
@@ -760,16 +822,18 @@ python -m pytest -q tests/test_limites.py
 **Obtenu** :
 
 ```
-À compléter
+tests/test_limites.py exécuté trois fois : 2 passed à chaque exécution.
 ```
 
 - [ ] Conforme
 
 **Commentaire** :
 
-> À compléter.
+Les tests conservés sont stables sur trois exécutions, mais le fichier actuel ne contient pas les dix tests mentionnés dans l'attendu historique. Le nombre d'essais et le résultat ancien ne sont donc pas reconstitués.
 
-![T23 : propriétés vertes](captures/tp4-t23-proprietes.png)
+Capture des trois exécutions actuelles, rejouées le 28/10/2026 :
+
+![T23 : répétition des tests de limites](captures/tp4-t23-proprietes.png)
 
 ### T24 · L'abstention
 
@@ -784,18 +848,21 @@ python src/courbe_seuil.py
 **Obtenu** (deux ou trois lignes de la courbe, puis la réponse au texte inventé) :
 
 ```
-À compléter
+  0.50        58   100%       0.879        7               0
+  0.60        42    72%       0.952        2              16
+  0.65        41    71%       0.976        1              17
+API, "xqzvb wlkptr grombu" : INDETERMINE, score 0.5162.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (le seuil retenu, combien d'avis partent vers un humain, combien d'erreurs sont évitées) :
 
-> À compléter.
+La courbe du script mesure les erreurs retirées de la décision automatique quand le seuil monte ; au seuil 0.65, 17 avis sont orientés vers un humain et une erreur reste parmi les 41 avis traités, contre sept erreurs sans abstention. Le modèle répond aussi `INDETERMINE` au texte inventé. Les sorties console actuelles ont été capturées le 28/10/2026.
 
-![T24 : courbe du seuil](captures/tp4-t24-courbe.png)
+![T24 : courbe des seuils](captures/tp4-t24-courbe.png)
 
-![T24 : verdict INDETERMINE](captures/tp4-t24-indetermine.png)
+![T24 : réponse API indéterminée](captures/tp4-t24-indetermine.png)
 
 ### T25 · Le jeu d'or
 
@@ -811,14 +878,17 @@ python -m pytest -q tests/test_jeu_or.py
 **Obtenu** (la ligne de bilan, puis la dernière ligne de pytest) :
 
 ```
-À compléter
+Bilan sur 20 avis : abstention 15, juste 5
+tests/test_jeu_or.py : 21 passed
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (ce que les abstentions et les erreurs déclarées disent du modèle) :
 
-> À compléter.
+Le bilan actuel préfère l'abstention à une réponse forcée pour les exemples difficiles ; cinq avis sont classés directement. Le test du jeu d'or passe entièrement sur le modèle produit aujourd'hui.
+
+Capture du bilan et des tests rejoués le 28/10/2026 :
 
 ![T25 : bilan du jeu d'or](captures/tp4-t25-jeu-or.png)
 
@@ -836,16 +906,19 @@ python -m pytest -q --cov=api --cov-report=term-missing --cov-fail-under=95
 **Obtenu** (le test qui échouait avant la correction, puis la couverture finale) :
 
 ```
-À compléter
+tests/test_integration.py : 1 passed
+Couverture API : 92.65% ; échec de --cov-fail-under=95 (93% arrondi dans le tableau).
 ```
 
 - [ ] Conforme
 
 **Commentaire** (pourquoi une panne du modèle doit-elle répondre 500, et pas 422 ?) :
 
-> À compléter.
+Une panne interne du classifieur n'est pas une erreur dans la requête du client ; elle doit donc être journalisée et renvoyée comme 500, sans exposer de détail interne. Le test d'intégration actuel passe, mais la couverture demandée de 95% n'est pas atteinte.
 
-![T26 : couverture finale](captures/tp4-t26-couverture.png)
+Capture des tests d'intégration et de la couverture rejoués le 28/10/2026 :
+
+![T26 : couverture API](captures/tp4-t26-couverture.png)
 
 ### T27 · Qualité statique, crochet et CI
 
@@ -863,18 +936,23 @@ pre-commit install
 **Obtenu** (le message de mypy avant correction, puis les trois sorties finales) :
 
 ```
-À compléter
+État avant correction / commit refusé : non rejoués.
+mypy api : Success: no issues found in 4 source files.
+ruff check . : 12 erreurs dans api/, src/ et tests/.
+pytest -q : 94 passed.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (parmi les défauts trouvés au TP4, combien ruff et mypy avaient-ils signalés au départ ?) :
 
-> À compléter.
+Le nombre historique des remarques de départ n'est pas conservé. Dans l'état courant, mypy est propre mais Ruff signale 12 problèmes ; le hook pre-commit n'a pas été installé ni testé pendant cette vérification.
 
-![T27 : commit refusé par pre-commit](captures/tp4-t27-pre-commit.png)
+> Capture historique non disponible (nom attendu : `captures/tp4-t27-pre-commit.png`) ; le hook n'a pas été rejoué.
 
-![T27 : la CI du TP4](captures/tp4-t27-actions.png)
+La capture ci-dessous montre la CI finale (run #25), qui ne comporte pas les contrôles Ruff et couverture demandés à T27 ; elle ne prouve donc pas ces contrôles :
+
+![CI finale, sans Ruff ni couverture](captures/tp6-t41-actions.png)
 
 ### Membre B, après le TP4
 
@@ -893,12 +971,16 @@ python -m pytest -q
 **Obtenu** :
 
 ```
-À compléter
+Non vérifié : aucune sortie ni capture du poste du membre B après le TP4 n'est conservée.
 ```
 
 - [ ] Conforme
 
-![TP4 : poste du membre B](captures/tp4-membre-b.png)
+**Commentaire** :
+
+L'installation de ruff, mypy et pre-commit sur le poste du membre B reste à confirmer par ce membre.
+
+> Capture historique non disponible (nom attendu : `captures/tp4-membre-b.png`) ; à fournir par le membre B.
 
 ---
 
@@ -920,16 +1002,19 @@ python -m pytest -q
 **Obtenu** :
 
 ```
-À compléter
+État actuel : `python -m pytest -q` : 94 passed.
+Le kit TP5 et la comparaison exacte avec les douze tests ajoutés n'ont pas été rejoués.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (que vérifient les tests du client, et ceux de la page ?) :
 
-> À compléter.
+La suite actuelle passe sans échec. Les tests du client couvrent les échanges HTTP et les erreurs ; ceux de la page vérifient le rendu Streamlit. Le nombre historique des tests ajoutés au TP5 n'est pas attesté par cette exécution.
 
-![T28 : tests du TP5](captures/tp5-t28-pytest.png)
+Capture de la suite rejouée le 28/10/2026 :
+
+![T28 : tests avant l'interface](captures/tp5-t28-pytest.png)
 
 ### T29 · La page ouverte, l'API prête
 
@@ -952,14 +1037,14 @@ streamlit run ui/app.py
 **Obtenu** :
 
 ```
-À compléter
+Page Streamlit ouverte le 28/10/2026 ; état affiché : API prête : tfidf-logreg (TP2, models/sentiment.joblib).
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** :
 
-> À compléter.
+La page s'ouvre et le contrôle de santé de l'API est positif. Capture réelle : `tp5-t29-page.png`.
 
 ![T29 : la page ouverte](captures/tp5-t29-page.png)
 
@@ -972,14 +1057,15 @@ Analysez « Livraison rapide, produit conforme, très satisfait », puis « Prod
 **Obtenu** :
 
 ```
-À compléter
+Avis « Livraison rapide, produit conforme, très satisfait » : Avis positif, 78%.
+Avis « Produit cassé et service injoignable, à fuir » : Avis négatif, 75%.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (d'où viennent ces pourcentages ?) :
 
-> À compléter.
+Les pourcentages sont les scores de confiance renvoyés par le modèle, arrondis par l'interface. Captures réelles : `tp5-t30-positif.png` et `tp5-t30-negatif.png`.
 
 ![T30 : avis positif](captures/tp5-t30-positif.png)
 
@@ -994,14 +1080,15 @@ Analysez « xqzvb wlkptr grombu ».
 **Obtenu** :
 
 ```
-À compléter
+« Je ne sais pas : à faire vérifier par un humain », 52%.
+Message : « La confiance est sous le seuil d'abstention : un humain doit trancher. »
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (pourquoi cet affichage vaut-il mieux qu'un verdict forcé ?) :
 
-> À compléter.
+À 52% le modèle n'a pas assez de confiance pour imposer un avis positif ou négatif ; le résultat demande donc une vérification humaine. Capture réelle : `tp5-t31-abstention.png`.
 
 ![T31 : je ne sais pas](captures/tp5-t31-abstention.png)
 
@@ -1014,14 +1101,15 @@ Analysez trois espaces. Arrêtez ensuite l'API (`Ctrl+C` dans son terminal), rec
 **Obtenu** :
 
 ```
-À compléter
+Trois espaces : avertissement « Texte refusé : vide, fait d'espaces, ou de plus de 2000 caractères. »
+API arrêtée : « API injoignable : lancez d'abord uvicorn api.main:app ».
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (quelle réponse de l'API se cache derrière chaque message ?) :
 
-> À compléter.
+Les espaces sont rejetés par la validation de la requête (422). Lorsque le serveur est arrêté, le client reçoit une erreur de transport et affiche le message d'indisponibilité. Les deux états ont été capturés sur la page courante.
 
 ![T32 : texte refusé](captures/tp5-t32-refus.png)
 
@@ -1036,14 +1124,16 @@ Onglet « Un fichier d'avis », fichier `data/avis_exemple.csv`, puis « Téléc
 **Obtenu** :
 
 ```
-À compléter
+Le tableau contient les six avis.
+Résumé observé : {"INDETERMINE": 2, "NEGATIVE": 2, "POSITIVE": 2}.
+Le CSV a été chargé dans l'interface ; le bouton de téléchargement est présent.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (combien d'avis partent vers un humain, et lesquels ?) :
 
-> À compléter.
+Deux avis sont orientés vers une vérification humaine : le texte inventé (score 0.5162) et « Pas déçu du tout, je recommande » (score 0.618). Ce dernier est sous le seuil actuel de l'API (0.65), ce qui explique l'écart avec l'attendu historique d'un seul avis à vérifier et d'une répartition 1/2/3. Capture réelle : `tp5-t33-lot.png`.
 
 ![T33 : le lot d'avis](captures/tp5-t33-lot.png)
 
@@ -1062,16 +1152,19 @@ git push
 **Obtenu** :
 
 ```
-À compléter
+Run GitHub Actions #25 sur main (commit 1d211a7) : Success.
+Les tests et l'étape de construction/installation de la roue sont passés.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** :
 
-> À compléter.
+La CI finale est verte. Ce run est postérieur au TP5 ; il confirme l'état actuel du dépôt, pas la date ni le contenu exact du push historique T34.
 
-![T34 : la CI du TP5](captures/tp5-t34-actions.png)
+La capture ci-dessous montre la CI finale (run #25), pas le run historique de T34 :
+
+![CI finale, également consignée à T41](captures/tp6-t41-actions.png)
 
 ### Membre B, après le TP5
 
@@ -1089,12 +1182,16 @@ streamlit run ui/app.py
 **Obtenu** :
 
 ```
-À compléter
+Non vérifié : aucune sortie ni capture du poste du membre B après le TP5 n'est conservée.
 ```
 
 - [ ] Conforme
 
-![TP5 : poste du membre B](captures/tp5-membre-b.png)
+**Commentaire** :
+
+Le lancement de Streamlit depuis le poste du membre B doit être confirmé par ce membre.
+
+> Capture historique non disponible (nom attendu : `captures/tp5-membre-b.png`) ; à fournir par le membre B.
 
 ---
 
@@ -1115,16 +1212,16 @@ python -m pytest -q
 **Obtenu** :
 
 ```
-À compléter
+Non reproduit : le kit TP6 et ses deux échecs intermédiaires voulus ne sont pas conservés.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (que réclame chacun des deux échecs ?) :
 
-> À compléter.
+Les deux échecs appartiennent à l'état avant le déplacement du prédicteur et la configuration du modèle. Ils ne peuvent pas être obtenus avec le code final ; aucune sortie historique fiable n'est disponible.
 
-![T35](captures/tp6-t35-pytest.png)
+> Capture historique non disponible (nom attendu : `captures/tp6-t35-pytest.png`) ; l'état intermédiaire du kit n'est pas conservé.
 
 ### T36 · predict.py dans le paquet
 
@@ -1142,16 +1239,19 @@ python src/predict.py "Livraison rapide, produit conforme, très satisfait"
 **Obtenu** :
 
 ```
-À compléter
+État intermédiaire T36 et son échec restant : non conservés.
+État final : `python src/predict.py "Livraison rapide, produit conforme, très satisfait"` produit `positive (confiance 78%)`.
 ```
 
 - [ ] Conforme
 
 **Commentaire** (à quoi sert le fichier de compatibilité ?) :
 
-> À compléter.
+Le fichier `src/predict.py` conserve les anciens imports et la commande historique tout en déléguant au module déplacé dans `sentiment_app`. L'échec volontaire de l'étape intermédiaire n'a pas été rejoué.
 
-![T36](captures/tp6-t36-deplacement.png)
+Capture de la commande de compatibilité rejouée sur l'état final le 28/10/2026 (elle ne reconstitue pas l'échec intermédiaire) :
+
+![T36 : commande de prédiction](captures/tp6-t36-deplacement.png)
 
 ### T37 · L'API branchée sur le paquet
 
@@ -1169,16 +1269,19 @@ mypy api
 **Obtenu** :
 
 ```
-À compléter
+Rejoué le 04/11/2026 : `Select-String -Path api\\*.py -Pattern "sys.path"` : aucune correspondance.
+pytest : 94 passed ; ruff check . : All checks passed! ; mypy api : Success: no issues found in 4 source files.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (qu'est-ce qui a changé dans api/model.py ?) :
 
-> À compléter.
+L'API importe désormais le prédicteur depuis le paquet `sentiment_app`, sans ajout manuel à `sys.path`. Après correction des erreurs Ruff, pytest, Ruff et mypy passent sur l'état actuel du dépôt.
 
-![T37](captures/tp6-t37-api.png)
+Capture des contrôles rejoués le 28/10/2026, avant la correction Ruff :
+
+![T37 : tests et vérifications API](captures/tp6-t37-api.png)
 
 ### T38 · La commande sentiment
 
@@ -1197,16 +1300,21 @@ sentiment serve
 **Obtenu** :
 
 ```
-À compléter
+sentiment --version : sentiment-app 0.6.0
+Prédiction positive : POSITIVE, score 0.777
+Texte inventé : INDETERMINE, score 0.5162
+`sentiment serve --port 8101`, puis GET /health : {"status":"OK","model":"tfidf-logreg (TP2, models/sentiment.joblib)"}
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (pourquoi « predict » applique-t-il aussi le seuil d'abstention ?) :
 
-> À compléter.
+Le seuil évite de transformer un score incertain en verdict binaire, quel que soit le point d'entrée ; la CLI suit donc le même contrat que l'API. Les commandes de version, prédiction et serveur ont été vérifiées dans l'environnement courant.
 
-![T38](captures/tp6-t38-commande.png)
+Capture des commandes CLI rejouées le 28/10/2026 :
+
+![T38 : version et prédictions CLI](captures/tp6-t38-commande.png)
 
 ### T39 · La roue
 
@@ -1222,16 +1330,19 @@ python -m build --wheel
 **Obtenu** :
 
 ```
-À compléter
+`python -m build --wheel` : Successfully built sentiment_app-0.6.0-py3-none-any.whl
+Contenu du wheel : api/, sentiment_app/, ui/ et métadonnées du paquet.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** (pourquoi ni tests, ni données, ni modèle ?) :
 
-> À compléter.
+La roue distribue le code et ses métadonnées, pas les données d'entraînement, les tests ni l'artefact du modèle, qui ont des cycles de vie distincts. Le contenu a été vérifié en construisant puis installant la roue hors du dépôt.
 
-![T39](captures/tp6-t39-roue.png)
+Capture de la construction actuelle, rejouée le 28/10/2026 :
+
+![T39 : construction de la roue](captures/tp6-t39-roue.png)
 
 ### T40 · La roue hors du dépôt
 
@@ -1251,16 +1362,22 @@ roue-tp6\Scripts\sentiment predict "Livraison rapide, produit conforme, très sa
 **Obtenu** :
 
 ```
-À compléter
+Sans SENTIMENT_MODELE : « Modèle absent » dans le site-packages, code de sortie 1.
+Avec SENTIMENT_MODELE pointant vers models/sentiment.joblib : POSITIVE, score 0.777.
 ```
 
-- [ ] Conforme
+Le 04/11/2026, le diagnostic a été complété et testé : il précise le chemin introuvable,
+la commande `python src/train.py` et la variable `SENTIMENT_MODELE`.
+
+- [x] Conforme
 
 **Commentaire** (qu'a-t-il fallu fournir à la roue, et qu'a-t-elle installé seule ?) :
 
-> À compléter.
+Il faut fournir le chemin de l'artefact externe avec `SENTIMENT_MODELE`. L'installation de la roue a installé ses dépendances Python déclarées ; le modèle n'est pas inclus dans le wheel. Cette vérification a été faite dans un environnement séparé, hors du dépôt.
 
-![T40](captures/tp6-t40-ailleurs.png)
+Capture de l'installation dans un préfixe temporaire hors du dépôt et des prédictions CLI rejouées le 28/10/2026 :
+
+![T40 : roue installée hors du dépôt](captures/tp6-t40-ailleurs.png)
 
 ### T41 · Version, étiquette, push
 
@@ -1279,14 +1396,15 @@ git push origin v0.6.0
 **Obtenu** :
 
 ```
-À compléter
+Le tag v0.6.0 existe dans le dépôt local et dans les références distantes GitHub.
+Dernière CI vérifiée : run #25, commit 1d211a7, conclusion Success.
 ```
 
-- [ ] Conforme
+- [x] Conforme
 
 **Commentaire** :
 
-> À compléter.
+La version 0.6.0 est bien publiée sous forme de tag distant et la CI finale passe, y compris la roue hors du dépôt. La capture actuelle de la CI est `tp6-t41-actions.png`.
 
 ![T41](captures/tp6-t41-actions.png)
 
@@ -1306,58 +1424,68 @@ sentiment --version
 **Obtenu** :
 
 ```
-À compléter
+Non vérifié : aucune sortie ni capture du poste du membre B après le TP6 n'est conservée.
 ```
 
 - [ ] Conforme
 
-![TP6 : poste du membre B](captures/tp6-membre-b.png)
+**Commentaire** :
+
+La vérification de l'installation éditable et de la commande sur le poste du membre B reste à effectuer par ce membre.
+
+> Capture historique non disponible (nom attendu : `captures/tp6-membre-b.png`) ; à fournir par le membre B.
 
 ---
 
 ## Les difficultés rencontrées
 
-Une ligne par blocage : le message exact, ce qui le provoquait, ce qui l'a réglé.
+- `pytest` n'était pas reconnu quand le venv n'était pas activé ; l'activation de `.venv` et l'usage de `python -m pytest` ont permis d'exécuter la suite (94 passed dans l'état courant).
+- Le test `test_modele_non_charge` supprimait l'état partagé de Starlette après le test ; le remplacement de `monkeypatch.setattr` par `monkeypatch.setitem(app.state._state, "classifier", None)` a empêché cette fuite, et la CI a ensuite dépassé l'étape Tests.
+- La CI échouait à l'étape de la roue avec `No module named build` ; `build==1.2.2.post1` a été ajouté à l'installation CI. Le run #25 passe depuis ce changement.
+- L'entraînement de démonstration modifie la date de `models/metrics.json`. Le fichier étant versionné, la modification générée a été annulée après la vérification pour ne pas inclure un changement sans rapport dans le journal.
+- Le résumé CSV attendu (un avis `INDETERMINE`) ne correspond plus au résultat actuel : deux avis le sont, car « Pas déçu du tout, je recommande » a un score de 0.618, inférieur au seuil API de 0.65. L'écart est documenté à T33 et n'a pas été masqué.
+- Les contrôles qualité locaux actuels restent à traiter : couverture API de 92.65% pour un seuil demandé de 95%, et 12 diagnostics Ruff, malgré 94 tests passés et un mypy sans erreur. La CI #25 n'exécute pas Ruff ni le seuil de couverture.
+- Les sorties antérieures à correction et les postes du membre B ne sont pas disponibles ; aucune capture historique n'a été fabriquée pour les remplacer.
 
 | TP | Commande | Message | Cause | Solution |
 | :---- | :---- | :---- | :---- | :---- |
-|  |  |  |  |  |
-|  |  |  |  |  |
-|  |  |  |  |  |
+| TP1 | `pytest -q` | `pytest` n'est pas reconnu dans PowerShell. | Le venv n'était pas activé ou son exécutable n'était pas résolu par le terminal. | Activer `.venv` et lancer `python -m pytest -q`. |
+| TP3–TP5 | `python -m pytest -q` en CI | Le test `test_modele_non_charge` laissait l'état Starlette modifié et faisait échouer des tests suivants. | `monkeypatch.setattr` retirait l'attribut `classifier` après le test au lieu de restaurer correctement l'état partagé. | Utiliser `monkeypatch.setitem(app.state._state, "classifier", None)` ; la suite et le run CI #25 passent ensuite. |
+| TP6 | `python -m build --wheel` en CI | `No module named build`. | Le paquet de construction de roue n'était pas installé dans le workflow. | Ajouter `build==1.2.2.post1` aux dépendances installées par la CI ; la construction réussit au run #25. |
 
 ## La répartition du travail
 
 | TP | Ce qu'a fait le membre A | Ce qu'a fait le membre B |
 | :---- | :---- | :---- |
-| TP1 |  |  |
-| TP2 |  |  |
-| TP3 |  |  |
-| TP4 |  |  |
-| TP5 |  |  |
-| TP6 |  |  |
+| TP1 | A initialisé le kit et son environnement, créé le dépôt GitHub et réalisé le push ; la préparation du poste A est documentée. | B a configuré son poste (Python 3.11.9, Git et identité Git) et a participé au cadrage à deux. L'historique contient ses libellés de commits ; le détail de chaque commit n'est pas conservé ici. |
+| TP2 | A a généré le jeu de démonstration, entraîné et évalué le modèle ; les contrôles actuels sont consignés en C2–C4. | Le journal prévoyait l'installation et les tests après TP2 sur le poste B, mais aucune sortie correspondante n'est conservée ; les tâches précises réalisées par B ne peuvent pas être attribuées. |
+| TP3 | A a réalisé les vérifications actuelles de l'API : santé, prédictions, validation des entrées et démarrage sans modèle. | Le contrôle après TP3 était demandé sur le poste B, mais son résultat n'est pas conservé ; aucune contribution technique plus précise ne peut être confirmée à partir des traces disponibles. |
+| TP4 | A a rejoué les tests, la couverture, Ruff et mypy ; les écarts actuels sont documentés en T21–T27. | L'installation des outils et les tests après TP4 étaient prévus sur le poste B ; aucune sortie ne permet de confirmer leur exécution ni d'attribuer d'autres tâches. |
+| TP5 | A a vérifié la page Streamlit, les prédictions, l'abstention, les erreurs et l'analyse CSV. | Le lancement de l'interface et les tests après TP5 étaient demandés sur le poste B ; aucune preuve de ce contrôle n'est conservée. |
+| TP6 | A a vérifié la commande `sentiment`, construit et testé la roue hors du dépôt, puis contrôlé le tag et la CI finale. | L'installation éditable, les tests et la version de la commande après TP6 étaient demandés sur le poste B ; leur résultat n'est pas conservé. |
 
 ## Le bilan
 
 **TP1** :
 
-> À compléter.
+> Le kit et l'environnement Python 3.11 sont en place. Les fiches de cadrage et les contrôles actuels sont renseignés ; la suite complète passe aujourd'hui avec 94 tests. Les nombres d'échecs attendus aux étapes initiales et la configuration historique du poste B ne sont pas reconstitués par ces vérifications finales.
 
 **TP2** :
 
-> À compléter.
+> Le jeu de démonstration contient 290 avis, et le modèle obtient un F1 macro de 0,879 sur le jeu de test (matrice `[[27, 2], [5, 24]]`). L'exécution sur Allociné et la vérification du membre B ne sont pas attestées par une sortie conservée.
 
 **TP3** :
 
-> À compléter.
+> L'API répond aux contrôles de santé et de prédiction ; les entrées invalides sont refusées en 422, et le démarrage échoue explicitement si le modèle configuré est absent. Le run CI final #25 est vert, mais il ne constitue pas une preuve du run historique de T19 ni du poste B.
 
 **TP4** :
 
-> À compléter.
+> Les tests actuels passent, et l'abstention évite de forcer un verdict lorsque le score est sous le seuil de 0,65. La couverture API reste à 92,65 %, sous le seuil demandé de 95 %, et Ruff signale 12 erreurs ; mypy ne signale pas d'erreur. Ces écarts sont maintenus visibles plutôt que déclarés conformes.
 
 **TP5** :
 
-> À compléter.
+> L'interface Streamlit a été vérifiée pour les avis positifs et négatifs, l'abstention, les erreurs et l'analyse par lot. Le CSV produit actuellement 2 `INDETERMINE`, 2 `NEGATIVE` et 2 `POSITIVE`, au lieu de la répartition attendue 1/2/3 ; le second avis indéterminé est sous le seuil API actuel de 0,65. Le contrôle correspondant du membre B n'est pas documenté.
 
 **TP6** :
 
-> À compléter.
+> La commande `sentiment` fonctionne et la roue 0.6.0 se construit puis s'installe hors du dépôt ; le modèle doit être fourni séparément via `SENTIMENT_MODELE`. Le tag distant `v0.6.0` et le run CI final #25 sont vérifiés. L'installation finale du membre B reste à confirmer.

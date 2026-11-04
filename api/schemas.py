@@ -1,6 +1,7 @@
 """Contrats d'entrée et de sortie de l'API (Pydantic v2)."""
-from pydantic import BaseModel, Field
 from typing import Literal
+
+from pydantic import BaseModel, Field
 
 
 class PredictRequest(BaseModel):
