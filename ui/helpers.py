@@ -4,13 +4,15 @@ Séparées de app.py pour être testables sans lancer Streamlit.
 """
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import pandas as pd
 
-from sentiment_app import predict as predict_module
-
 RACINE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(RACINE / "src"))
+import predict as predict_module  # noqa: E402  (src/predict.py, la même fonction que l'API)
+
 MODELE = RACINE / "models" / "sentiment.joblib"
 SEUIL_INCERTITUDE = 0.60   # en dessous, on affiche « à vérifier »
 

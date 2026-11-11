@@ -1,13 +1,15 @@
-"""Tests du paquet (TP6) : installable, une commande, une version, un modèle qu'on peut placer ailleurs."""
-import json
+"""Tests de la configuration du paquet (TP 4), lancés dans le dépôt, sans installer la roue.
+
+Ils lisent pyproject.toml et les sources : ils attrapent tôt une erreur de configuration
+(modèle oublié, commande mal déclarée, version absente). Le paquet installé, lui, est testé
+par tests/test_paquet.py, que lance scripts/verifier_livrable.py.
+"""
 import re
 import tomllib
 from pathlib import Path
 
-import pytest
-
 RACINE = Path(__file__).resolve().parents[1]
-MODELE = RACINE / "models" / "sentiment.joblib"
+PAQUET = RACINE / "src" / "sentiment_app"
 
 
 def lire_pyproject() -> dict:
@@ -15,63 +17,38 @@ def lire_pyproject() -> dict:
 
 
 def test_metadonnees_du_paquet():
-    """pyproject.toml décrit un paquet nommé, installable, avec sa commande."""
+    """Un paquet nommé, avec une version écrite en clair et sa commande."""
     projet = lire_pyproject()["project"]
     assert projet["name"] == "sentiment-app"
+    assert re.fullmatch(r"\d+\.\d+\.\d+", projet["version"])
     assert projet["scripts"]["sentiment"] == "sentiment_app.cli:main"
-    # Le modèle sauvegardé ne se relit qu'avec la version de scikit-learn qui l'a produit
-    assert any(dependance.startswith("scikit-learn") for dependance in projet["dependencies"])
+
+
+def test_scikit_learn_est_fige():
+    """Le modèle sérialisé ne se relit qu'avec la version de scikit-learn qui l'a produit."""
+    dependances = lire_pyproject()["project"]["dependencies"]
+    assert any(d.replace(" ", "").startswith("scikit-learn==1.5") for d in dependances), dependances
+
+
+def test_le_modele_est_declare_dans_la_roue():
+    """Sans package-data, la roue se construit sans erreur, mais sans le modèle."""
+    setuptools = lire_pyproject()["tool"]["setuptools"]
+    assert setuptools["packages"]["find"]["where"] == ["src"]
+    assert "modele/*.joblib" in setuptools["package-data"]["sentiment_app"]
 
 
 def test_une_seule_source_pour_la_version():
-    """La version est écrite à un seul endroit, sentiment_app/__init__.py, et pyproject.toml la lit."""
-    import sentiment_app
-
-    assert re.fullmatch(r"\d+\.\d+\.\d+", sentiment_app.__version__)
-    assert lire_pyproject()["tool"]["setuptools"]["dynamic"]["version"]["attr"] == "sentiment_app.__version__"
-
-
-def test_le_modele_se_place_ou_l_on_veut(monkeypatch, tmp_path):
-    """Le modèle n'est pas dans le paquet : SENTIMENT_MODELE indique où il est."""
-    from sentiment_app import predict
-
-    monkeypatch.setenv("SENTIMENT_MODELE", str(tmp_path / "ailleurs.joblib"))
-    assert predict.chemin_modele() == tmp_path / "ailleurs.joblib"
-    monkeypatch.delenv("SENTIMENT_MODELE")
-    assert predict.chemin_modele() == MODELE
+    """__init__.py lit la version dans les métadonnées : aucun numéro écrit en dur dans le code."""
+    init = (PAQUET / "__init__.py").read_text(encoding="utf-8")
+    assert 'version("sentiment-app")' in init
+    assert not re.search(r"__version__\s*=\s*[\"']\d", init)
 
 
-def test_modele_absent_indique_comment_le_fournir(monkeypatch, tmp_path):
-    """L'erreur explique comment entraîner le modèle ou le localiser."""
-    from sentiment_app import predict
-
-    chemin_absent = tmp_path / "absent.joblib"
-    monkeypatch.setattr(predict, "chemin_modele", lambda: chemin_absent)
-    predict.charger_modele.cache_clear()
-    try:
-        with pytest.raises(FileNotFoundError) as erreur:
-            predict.charger_modele()
-    finally:
-        predict.charger_modele.cache_clear()
-
-    assert str(chemin_absent) in str(erreur.value)
-    assert "python src/train.py" in str(erreur.value)
-    assert "SENTIMENT_MODELE" in str(erreur.value)
+def test_le_journal_decrit_la_version():
+    version = lire_pyproject()["project"]["version"]
+    assert f"[{version}]" in (RACINE / "CHANGELOG.md").read_text(encoding="utf-8")
 
 
-def test_commande_version(capsys):
-    from sentiment_app import __version__, cli
-
-    with pytest.raises(SystemExit) as fin:
-        cli.main(["--version"])
-    assert fin.value.code == 0
-    assert capsys.readouterr().out.strip() == f"sentiment-app {__version__}"
-
-
-@pytest.mark.skipif(not MODELE.exists(), reason="modèle non produit : python src/train.py")
-def test_commande_predict(capsys):
-    from sentiment_app import cli
-
-    assert cli.main(["predict", "Livraison rapide, produit conforme, très satisfait"]) == 0
-    resultat = json.loads(capsys.readouterr().out)
-    assert resultat["label"] == "POSITIVE" and 0.5 <= resultat["score"] <= 1
+def test_le_modele_n_est_pas_commite():
+    """Le modèle est copié dans le paquet au moment de construire, jamais versionné."""
+    assert "src/sentiment_app/modele/*.joblib" in (RACINE / ".gitignore").read_text(encoding="utf-8")
