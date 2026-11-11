@@ -39,15 +39,15 @@ def test_predict_sans_texte_est_refuse(capsys):
 
 
 def test_predict_sans_modele(monkeypatch, tmp_path, capsys):
-    from sentiment_app import predict
+    import predict  # src/predict.py : l'API et la commande passent maintenant par lui
 
-    monkeypatch.setattr(predict, "chemin_modele", lambda: tmp_path / "absent.joblib")
+    monkeypatch.setattr(predict, "MODELE", tmp_path / "absent.joblib")
     predict.charger_modele.cache_clear()  # le modèle est gardé en cache après le premier chargement
     try:
         assert cli.main(["predict", "Très bien"]) == 1
     finally:
         predict.charger_modele.cache_clear()  # les tests suivants rechargent le vrai modèle
-    assert "modèle introuvable" in capsys.readouterr().err.lower()
+    assert "absent" in capsys.readouterr().err.lower()
 
 
 def test_serve_lance_uvicorn_sur_l_api(monkeypatch):

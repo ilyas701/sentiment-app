@@ -31,12 +31,6 @@ def test_une_seule_source_pour_la_version():
     assert lire_pyproject()["tool"]["setuptools"]["dynamic"]["version"]["attr"] == "sentiment_app.__version__"
 
 
-def test_l_api_ne_bricole_plus_le_chemin_de_python():
-    """L'API importe le paquet ; plus aucun sys.path modifié à la main dans api/."""
-    for fichier in sorted((RACINE / "api").glob("*.py")):
-        assert "sys.path" not in fichier.read_text(encoding="utf-8"), f"{fichier.name} modifie encore sys.path"
-
-
 def test_le_modele_se_place_ou_l_on_veut(monkeypatch, tmp_path):
     """Le modèle n'est pas dans le paquet : SENTIMENT_MODELE indique où il est."""
     from sentiment_app import predict

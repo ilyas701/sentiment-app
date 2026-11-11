@@ -1,29 +1,51 @@
-"""Raccord entre l'API et le modèle entraîné au TP2.
+"""Raccord entre l'API et le modèle entraîné par src/train.py (TP 1).
 
 L'API n'entraîne rien et ne connaît pas scikit-learn : elle appelle la fonction
-predict() de sentiment_app.predict, qui charge models/sentiment.joblib une seule fois.
+predict() de src/predict.py, qui charge models/sentiment.joblib une seule fois.
 """
-from sentiment_app.predict import charger_modele
-from sentiment_app.predict import predict as _predict
+import sys
+from pathlib import Path
+from typing import TypedDict
 
+from api.schemas import Label
+
+RACINE = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(RACINE / "src"))
+from predict import charger_modele  # noqa: E402  (fonctions de src/predict.py)
+from predict import predict as _predict  # noqa: E402
+
+# Seuil d'abstention, choisi par le binôme avec src/courbe_seuil.py (docs/semaine4.md) : à 0,65, l'API
+# répond à 41 avis sur 58 (71 %), avec 1 erreur au lieu de 7 ; les 17 autres vont à un humain.
+# À 0,60 (valeur du manuel), l'avis « Le design est joli mais… » (score 0,61) du jeu d'or devient une erreur franche.
 SEUIL_ABSTENTION = 0.65
+# Étiquettes du modèle -> étiquettes du contrat : une correspondance explicite, vérifiée au démarrage
+CORRESPONDANCE: dict[str, Label] = {"positive": "POSITIVE", "negative": "NEGATIVE"}
+
+
+class Prediction(TypedDict):
+    label: Label
+    score: float
+    text: str
 
 
 class SentimentClassifier:
-    """Enveloppe du modèle TP2 avec l'interface attendue par l'API."""
+    """Enveloppe du modèle avec l'interface attendue par l'API."""
 
-    model_name = "tfidf-logreg (TP2, models/sentiment.joblib)"
+    model_name = "tfidf-logreg (models/sentiment.joblib)"
 
     def __init__(self) -> None:
-        charger_modele()  # échoue immédiatement si le joblib manque : on ne démarre pas sans modèle
+        modele = charger_modele()  # FileNotFoundError si le joblib manque : on ne démarre pas
+        inconnues = {str(c) for c in modele.classes_} - set(CORRESPONDANCE)
+        if inconnues:  # un modèle réentraîné sur d'autres étiquettes casserait le contrat
+            raise ValueError(f"classes inconnues du contrat : {sorted(inconnues)}")
 
-    def predict(self, text: str) -> dict:
-        """Renvoie le sentiment, ou INDETERMINE si la confiance est sous le seuil."""
-        r = _predict(text)  # lève ValueError si le texte est vide
-        label = r["label"].upper() if r["score"] >= SEUIL_ABSTENTION else "INDETERMINE"
+    def predict(self, text: str) -> Prediction:
+        """Renvoie l'étiquette du contrat, ou INDETERMINE quand le modèle hésite."""
+        r = _predict(text)
+        label: Label = "INDETERMINE" if r["score"] < SEUIL_ABSTENTION else CORRESPONDANCE[r["label"]]
         return {"label": label, "score": r["score"], "text": text[:100]}
 
 
 def load_model() -> SentimentClassifier:
-    """Construit le classifier (le cache de chargement est dans sentiment_app.predict)."""
+    """Construit le classifier (le cache de chargement est dans src/predict.py)."""
     return SentimentClassifier()
