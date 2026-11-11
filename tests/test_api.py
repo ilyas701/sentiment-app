@@ -1,4 +1,4 @@
-"""Tests de l'API du TP3 (6 tests), via TestClient : aucun serveur à lancer.
+"""Tests de l'API du TP 1 (6 tests), via TestClient : aucun serveur à lancer.
 
 Ignorés tant que models/sentiment.joblib n'existe pas sur le poste (la CI
 l'entraîne avant pytest : voir .github/workflows/ci.yml).
@@ -16,7 +16,6 @@ def client():
     from fastapi.testclient import TestClient
 
     from api.main import app
-
     with TestClient(app) as c:  # le "with" déclenche lifespan (chargement du modèle)
         yield c
 
@@ -32,7 +31,7 @@ def test_health(client):
     assert r.status_code == 200
     body = r.json()
     assert body["status"] == "OK"
-    assert "TP2" in body["model"]
+    assert "sentiment.joblib" in body["model"]
 
 
 def test_predict_positif(client):
@@ -49,12 +48,6 @@ def test_predict_negatif(client):
     assert r.json()["label"] == "NEGATIVE"
 
 
-def test_predict_abstention_si_confiance_faible(client):
-    r = client.post("/predict", json={"text": "Le design est joli mais la fonctionnalité laisse à désirer."})
-    assert r.status_code == 200
-    assert r.json()["label"] == "INDETERMINE"
-
-
 def test_predict_texte_vide_422(client):
     assert client.post("/predict", json={"text": ""}).status_code == 422
     assert client.post("/predict", json={"text": "   "}).status_code == 422
@@ -63,3 +56,9 @@ def test_predict_texte_vide_422(client):
 def test_predict_champ_manquant_422(client):
     assert client.post("/predict", json={}).status_code == 422
     assert client.post("/predict", json={"text": 42}).status_code == 422
+
+
+def test_predict_abstention_si_confiance_faible(client):
+    r = client.post("/predict", json={"text": "Le design est joli mais la fonctionnalité laisse à désirer."})
+    assert r.status_code == 200
+    assert r.json()["label"] == "INDETERMINE"

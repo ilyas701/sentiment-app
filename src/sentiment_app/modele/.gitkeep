@@ -1,0 +1,2 @@
+# Garde ce dossier dans Git. Le modèle y est copié avant « python -m build » :
+# Copy-Item models\sentiment.joblib src\sentiment_app\modele\
