@@ -1,11 +1,18 @@
-"""Interface Streamlit (TP5) : elle appelle l'API, jamais le modèle.
+"""Interface Streamlit (TP 3) : elle appelle l'API /v1, jamais le modèle.
 
 Lancer, API déjà démarrée dans un autre terminal : streamlit run ui/app.py
 """
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # streamlit run ne voit que ui/
+
 import pandas as pd
 import streamlit as st
 
 from ui import client
+
+SEUIL_API = 0.65  # même valeur que SEUIL_ABSTENTION dans api/model.py
 
 st.set_page_config(page_title="Analyse de sentiment")
 st.title("Analyse de sentiment des avis")
@@ -44,5 +51,17 @@ with onglet_lot:
             avis["confiance"] = [r.score for r in reponses]
             st.dataframe(avis, use_container_width=True)
             st.write(client.resumer(reponses))
+
+            st.subheader("Répartition des verdicts")
+            st.bar_chart(avis["verdict"].value_counts())
+
+            # Tranches fermées à gauche (right=False) : un score de 0,65 tombe dans « 0,65 à 0,7 »,
+            # comme dans l'API, qui s'abstient pour score < 0,65. La borne 1,01 garde un score de 1.
+            st.subheader("Distribution de la confiance")
+            tranches = pd.cut(avis["confiance"], bins=[0.5, SEUIL_API, 0.7, 0.8, 0.9, 1.01], right=False,
+                              labels=["0,5 à 0,65", "0,65 à 0,7", "0,7 à 0,8", "0,8 à 0,9", "0,9 à 1"])
+            st.bar_chart(tranches.value_counts().sort_index())
+            st.caption("Sous 0,65 : avis renvoyés à un humain. "
+                       "Ces graphiques résument les sorties du modèle ; ils ne mesurent pas sa justesse.")
             st.download_button("Télécharger les résultats", avis.to_csv(index=False),
                                file_name="resultats.csv", mime="text/csv")
