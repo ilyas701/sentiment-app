@@ -1,94 +1,113 @@
-# Compte rendu global des TP1 à TP6
+# Compte rendu global : Atelier 0 et TP 1 à TP 4
 
 **Binôme :** Ilyas Errifay (@ilyas701) et Othman Raji (@Othm4n)  
 **Dépôt :** https://github.com/ilyas701/sentiment-app  
-**Date :** 28/10/2026  
+**Version livrée :** release `v1.0.0` (https://github.com/ilyas701/sentiment-app/releases/tag/v1.0.0)  
+**Date :** 25/11/2026  
+
+> **Numérotation.** Le dépôt a d'abord été construit avec l'ancienne numérotation (TP1 à TP6, versions 0.1.0 à 0.6.0). Ce compte rendu suit celle du programme et du manuel : Atelier 0 (ancien TP1), TP 1 (anciens TP2 et TP3), TP 2 (API `/v1`, nouveau), TP 3 (ancien TP5), TP 4 (ancien TP6, refait en 1.0.0). L'ancien TP4 (tests aux limites, abstention, jeu d'or, ruff, mypy) est un travail en plus, conservé.
 
 ## 1. Le besoin et son cadrage
 
-Le projet vise à automatiser l'analyse de sentiment d'un grand volume d'avis clients pour détecter rapidement les retours négatifs et prioriser le traitement par le service client. Pour répondre au Cas 3 (filtrage et priorisation d'avis de e-commerce/cinéma), nous avons retenu une approche par modélisation supervisée (Pipeline combinant TF-IDF et régression logistique). Ce choix est justifié par deux critères clés : (a) la présence de données historiques étiquetées permettant un apprentissage supervisé robuste, et (d) la conséquence d'une erreur (un faux négatif laisse passer un client mécontent sans suivi, ce qui impacte directement la rétention, d'où la nécessité d'un seuil d'incertitude prudent).
+Le projet vise à automatiser l'analyse de sentiment d'un grand volume d'avis clients pour détecter rapidement les retours négatifs et prioriser le traitement par le service client. Pour répondre au Cas 3 (filtrage et priorisation d'avis), nous avons retenu une approche supervisée (TF-IDF et régression logistique). Deux critères justifient ce choix : (a) la présence de données historiques étiquetées, et (d) la conséquence d'une erreur : un faux négatif laisse un client mécontent sans suivi, d'où la nécessité d'un seuil d'abstention prudent.
 
-## 2. L'architecture du dépôt et le packaging (TP6)
+## 2. L'architecture du dépôt
 
-Le dépôt est structuré de manière modulaire, suivant scrupuleusement la séparation des responsabilités et les exigences de packaging Python :
-- `sentiment_app/` : Le paquet principal contenant la logique métier (`predict.py`), la gestion des versions (`__version__ = "0.6.0"`) et l'interface en ligne de commande (`cli.py` et `__main__.py`).
-- `api/` : Contient le point d'entrée FastAPI (`main.py`), la gestion propre du modèle (`model.py` important directement depuis le paquet sans manipulation de `sys.path`) et les schémas de validation Pydantic (`schemas.py`).
-- `ui/` : Contient l'interface Streamlit (`app.py`) et son client HTTP (`client.py`) chargé de communiquer avec l'API FastAPI.
-- `data/` : Contient les jeux de données bruts, de démonstration, le fichier d'exemple pour l'analyse par lot (`data/avis_exemple.csv`) et le jeu d'or de validation (`data/jeu_or.csv` comportant 20 avis dont 5 cas difficiles).
-- `models/` : Contient les artefacts de performance (`metrics.json`) et le modèle sérialisé (`sentiment.joblib`). Le fichier `metrics.json` est versionné en texte brut pour auditer instantanément les performances dans l'intégration continue, tandis que le binaire `sentiment.joblib` est généré localement ou configuré dynamiquement via la variable d'environnement `SENTIMENT_MODELE`.
-- `src/` : Contient les scripts d'entraînement/évaluation et un fichier de compatibilité `predict.py` assurant le relais avec l'ancienne structure pour les tests historiques.
-- `tests/` : Contient l'ensemble des tests unitaires, d'intégration, de qualité statique, de l'API, du client HTTP, de l'interface et du packaging (94 tests validés avec succès à 100%).
+- `src/sentiment_app/` : le **paquet installable 1.0.0** : `predict()`, la commande `sentiment` (`cli.py`) et le modèle, copié dans `modele/` au moment de construire la roue.
+- `src/` : les scripts `train.py`, `evaluate.py`, `courbe_seuil.py` et `predict.py`, la fonction de prédiction appelée par l'API.
+- `api/` : FastAPI : `main.py` (format d'erreur, CORS, route `/predict` dépréciée), `v1.py` (routes `/v1`), `securite.py` (clés et rôles), `model.py` (seuil d'abstention) et `schemas.py` (contrat Pydantic).
+- `ui/` : l'interface Streamlit (`app.py`) et son client HTTP (`client.py`).
+- `web/` : un client web sans dépendance et ses 12 tests Node.
+- `java/avis-service/` : un service Spring Boot qui consomme l'API (5 tests JUnit).
+- `scripts/verifier_livrable.py` : contrôle du livrable du TP 4, comme le fait le correcteur.
+- `tests/` : **128 tests Python verts** (1 ignoré dans le dépôt, `test_paquet.py`, lancé par le vérificateur sur la roue installée), couverture de `api/` à **100 %**.
+
+La CI GitHub Actions rejoue trois jobs à chaque push : Python (ruff, mypy, pytest avec couverture minimale de 95 %), client web (Node) et service Java (Maven).
 
 ## 3. Le modèle
 
-Le pipeline s'appuie sur une vectorisation TF-IDF du texte suivie d'un classifieur linéaire (régression logistique) entraîné sur le jeu de données Allociné et évalué sur notre jeu de démonstration.
+Le pipeline vectorise le texte avec TF-IDF, puis applique une régression logistique.
 
 | Jeu | Avis | Vocabulaire | F1 macro | Rappel négatif |
 | --- | --- | --- | --- | --- |
-| Démonstration | 290 | 316 | 0.879 | 0.900 |
+| Démonstration | 290 | 316 | 0.879 | 0.931 |
 | Allociné | 20000 | 10000+ | 0.920 | 0.915 |
 
-**Matrice de confusion (Jeu de démonstration) :**
+**Matrice de confusion (jeu de démonstration, 58 avis de test) :**
 ```text
 [[27,  2],
  [ 5, 24]]
 ```
-- Vrais Négatifs ($27$) : Avis négatifs correctement classés.
-- Faux Positifs ($2$) : Avis positifs classés à tort comme négatifs (surcoût mineur de vérification humaine).
-- Faux Négatifs ($5$) : Avis négatifs classés à tort comme positifs (risque critique de non-prise en charge du client).
-- Vrais Positifs ($24$) : Avis positifs correctement identifiés.
+Les lignes sont les vraies classes, dans l'ordre `negative`, `positive` (rappel négatif : 27 / 29 = 0,931). **2 avis négatifs sont classés positifs** : c'est l'erreur la plus coûteuse pour notre besoin, un client mécontent qui passe inaperçu, et c'est elle que l'abstention doit réduire. Les 5 avis positifs classés négatifs ne coûtent qu'une vérification inutile.
 
 ## 4. L'analyse des erreurs
 
-Sur le jeu de test de démonstration et le jeu d'or, nous observons que les erreurs proviennent principalement de tournures ironiques ou de négations complexes que le modèle bag-of-words (TF-IDF) interprète mal. *Exemple :* L'avis « Pas déçu du tout, je recommande » ou des phrases à retournement d'avis mitigés sont complexes pour un sac de mots. Pour corriger cela, il faudrait basculer vers des modèles contextuels profonds (type Transformers/CamemBERT), ce qui n'était pas l'objectif didactique de cette séance axée sur la mise en place d'un pipeline MLOps léger, robuste et itératif.
+Les erreurs viennent surtout des négations et des avis mitigés, qu'un sac de mots (TF-IDF) ne sait pas lire. « Pas déçu du tout, je recommande » obtient un score de 0,618 seulement : le modèle voit « déçu » et hésite. « Le design est joli mais la fonctionnalité laisse à désirer », négatif dans notre jeu d'or, est classé positif avec 0,61. Un modèle contextuel (type CamemBERT) corrigerait une partie de ces cas, mais ce n'était pas l'objectif du volume 1.
 
-## 5. Industrialisation (API FastAPI), Qualité et Seuil d'Abstention
+## 5. TP 1 : l'API FastAPI et le seuil d'abstention
 
-- **API FastAPI :** Le modèle est encapsulé dans un service FastAPI (`api/main.py`), exposant les endpoints `/health` (santé du service et modèle chargé) et `/predict` (classification des avis). L'API intègre un contrat Pydantic strict d'entrée (`schemas.py`) rejetant les textes vides, composés uniquement d'espaces ou dépassant 2000 caractères par des erreurs HTTP 422 standardisées.
-- **Seuil d'abstention :** Un seuil de confiance de $0.60$ (`SEUIL_ABSTENTION`) a été implémenté dans `api/model.py`. En dessous de ce seuil, le verdict renvoyé est `INDETERMINE`, permettant d'orienter les cas incertains vers une revue humaine plutôt que d'imposer un diagnostic binaire erroné.
-- **Qualité & CI :** Un pipeline CI (GitHub Actions) exécute à chaque commit le linter `ruff`, le vérificateur de typage statique `mypy`, les crochets `pre-commit` et la suite `pytest` avec contrôle de couverture de code (supérieure à 95% sur l'API) et validation de l'installation de la roue hors du dépôt.
+- **API :** `/health` et `/predict`, avec un contrat Pydantic qui refuse en 422 un texte vide, fait d'espaces ou de plus de 2000 caractères.
+- **Seuil d'abstention : 0,65** (`SEUIL_ABSTENTION` dans `api/model.py`). Sous ce seuil, l'API renvoie `INDETERMINE` et l'avis va à un humain. Nous avons choisi cette valeur avec `src/courbe_seuil.py` sur les 58 avis de test : à 0,65, l'API décide seule pour 41 avis (71 %) avec 1 erreur, contre 7 erreurs sans abstention ; à 0,60 (valeur du manuel), elle décide pour 42 avis avec 2 erreurs. Surtout, à 0,60, l'avis « Le design est joli mais… » (score 0,61) du jeu d'or devient une erreur franche : notre test `test_jeu_or.py` l'a détecté quand le kit du TP 2 a remis 0,60. Nous avons gardé 0,65 : un humain de plus à solliciter coûte moins cher qu'un client mécontent ignoré.
+- **Limite de ce réglage :** le seuil a été choisi sur ces mêmes 58 avis ; une évaluation rigoureuse demanderait un jeu de validation séparé.
 
-## 6. L'interface Streamlit (TP5)
+## 6. TP 2 : une API versionnée et protégée, et ses clients
 
-L'interface web Streamlit (`ui/app.py`) offre une expérience utilisateur fluide et intuitive reposant sur une architecture totalement découplée de la logique du modèle :
-- **Architecture découplée (Règle d'or) :** L'interface n'importe jamais directement le modèle sérialisé (`.joblib`) ni les modules de prédiction. Elle communique exclusivement avec l'API FastAPI via la classe client `ui/client.py` (requêtes HTTP POST). Si l'API est déplacée ou si le modèle est réentraîné, l'interface n'a besoin d'aucune modification.
-- **Gestion des retours et de l'incertitude :** 
-  - Pour les avis clairs, le verdict (`Avis positif` ou `Avis négatif`) est affiché avec son pourcentage de confiance.
-  - En cas d'abstention (score sous $0.60$), l'interface indique clairement **« Je ne sais pas : à faire vérifier par un humain »** avec un message expliquant que la confiance est sous le seuil d'abstention.
-  - En cas de panne ou d'indisponibilité de l'API, la page affiche immédiatement un message d'erreur clair (« API injoignable ») au lieu d'un plantage opaque.
-- **Analyse par lot (Fichier CSV) :** L'onglet « Un fichier d'avis » permet de charger un fichier CSV (comme `data/avis_exemple.csv`), d'analyser l'ensemble des lignes via l'API, d'afficher le tableau complété des verdicts et confiances, de visualiser un résumé statistique (ex: `{'INDETERMINE': 1, 'NEGATIVE': 2, 'POSITIVE': 3}`) et de télécharger les résultats sous forme de fichier `resultats.csv`.
+- **Version `/v1` :** `/v1/health` (publique), `/v1/predict` (rôles client et admin) et `/v1/modele` (admin seulement : seuil et métriques). L'ancienne route `/predict` marche toujours, mais répond avec les en-têtes `Deprecation: true` et `Link: </v1/predict>` pour annoncer son remplacement.
+- **Clés d'API et rôles :** la clé passe dans l'en-tête `X-API-Key` ; les clés et leur rôle sont lus dans `API_KEYS` (fichier `.env`, ignoré par Git). Une clé de moins de 16 caractères empêche l'API de démarrer, et la comparaison utilise `secrets.compare_digest` pour ne pas révéler la clé par le temps de réponse. Nous avons vérifié les cinq cas dans `/docs` (captures `docs/captures/tp2-c1-*.png`) : **401** sans clé (authentification), **200** avec la clé client, **422** pour un texte d'espaces, **403** pour `/v1/modele` en client (autorisation), et `seuil_abstention: 0.65` avec la clé admin.
+- **Format d'erreur unique :** toutes les erreurs `/v1` ont la forme `{"erreur": {"code", "message", "champs"}}`. Les clients testent le **code**, stable (`NON_AUTHENTIFIE`, `ENTREE_INVALIDE`…), jamais le message.
+- **Client web :** la page `web/` affiche le verdict, l'abstention (« à faire vérifier par un humain », 61 %) et une clé refusée (captures `tp2-c2-1` à `tp2-c2-3`).
+- **Expérience CORS :** servie sur le port 5600 au lieu de 5500, la même page affiche « API injoignable ». La console montre que la **requête de pré-vérification** (`OPTIONS`) est refusée faute d'en-tête `Access-Control-Allow-Origin` (capture `tp2-c2-4-cors-port-5600.png`). CORS est une protection du navigateur : il ne remplace pas la clé, et `curl` ou Streamlit n'y sont pas soumis.
+- **Service Java :** compilé et testé (5 tests JUnit) par la CI ; nous ne l'avons pas lancé sur nos postes, faute de Maven installé.
 
-## 7. Packaging, CLI et Distribution (TP6)
+## 7. TP 3 : l'interface Streamlit et ses graphiques
 
-Le projet a franchi une étape majeure d'industrialisation sous forme de paquet Python installable :
-- **Paquet Python et CLI :** Le code est packagé dans `sentiment_app/` et expose une interface en ligne de commande (`sentiment`) permettant d'exécuter les actions clés (`sentiment --version`, `sentiment predict "..."`, `sentiment serve` pour l'API et `sentiment ui` pour l'interface).
-- **Modèle configurable :** Grâce à la fonction `chemin_modele()` couplée à la variable d'environnement `SENTIMENT_MODELE`, le paquet peut être installé n'importe où sur le poste (hors du répertoire du dépôt) tout en localisant dynamiquement l'artefact du modèle `.joblib`.
-- **Construction de la roue et tests d'intégrité :** La roue de distribution (`sentiment_app-0.6.0-py3-none-any.whl`) a été générée avec succès via l'outil `build`. Elle intègre strictement les sources nécessaires (`sentiment_app`, `api`, `ui`) en écartant les données, tests et modèles, et a été validée par un test d'installation dans un environnement virtuel tiers.
-- **Épinglage des dépendances :** La version de `scikit-learn` a été épinglée en version `1.5.x` pour garantir la compatibilité binaire lors de la relecture du modèle sérialisé.
+- **Architecture découplée :** l'interface n'importe jamais le modèle ; elle appelle `/v1` avec la clé lue dans `.env` (`load_dotenv()`), car Streamlit ne lit pas ce fichier seul.
+- **Un avis :** « Avis positif, 78 % » ; l'avis mitigé donne « Je ne sais pas : à faire vérifier par un humain, 61 % » avec un encadré qui explique l'abstention (captures `tp3-c2`, `tp3-c3`).
+- **Un fichier :** `data/avis_exemple.csv` donne **2 positifs, 2 négatifs, 2 à vérifier** (mots inventés à 0,516 et « Pas déçu du tout » à 0,618). L'ancien résultat attendu (1/2/3) supposait un seuil de 0,60.
+- **Deux graphiques :** la répartition des verdicts et la distribution de la confiance (captures `tp3-c5`, `tp3-c6`). Le code du manuel découpait les scores avec `pd.cut(bins=[0.5, 0.6, …])`, fermé à droite : un score de 0,5 n'entrait dans aucune tranche, et la frontière ne correspondait pas à notre seuil. Nous avons utilisé `bins=[0.5, 0.65, 0.7, 0.8, 0.9, 1.01]` avec `right=False` : la première tranche compte exactement les 2 abstentions. Ces graphiques résument les sorties du modèle ; sans étiquettes, ils ne mesurent pas sa justesse.
+- **API arrêtée :** la page affiche « API injoignable » sans planter (capture `tp3-c7`) : l'affichage (port 8501) et le traitement (port 8000) sont deux programmes distincts.
 
-## 8. Ce qui a échoué et résolution des blocages
+## 8. TP 4 : le paquet 1.0.0 et sa release
 
-Les principaux blocages rencontrés durant l'ensemble des TP ont concerné :
-1. La configuration initiale des chemins d'importation entre les dossiers `src/`, `tests/`, `api/` et `ui/`, entraînant des erreurs `ModuleNotFoundError` (résolues par l'ajustement du `pythonpath` dans `pytest.ini` et l'insertion explicite de la racine dans `sys.path`).
-2. Des conflits de versions entre bibliothèques (notamment `pyarrow` / `mlflow` et `numpy<2`), résolus en gelant des dépendances compatibles dans `requirements.txt` et `requirements.lock`.
-3. L'intégration de l'interface du TP5 : lors de l'application du kit TP5, le fichier `ui/app.py` existant avait été conservé, créant un désalignement avec les tests unitaires. L'écrasement de `ui/app.py` par la version officielle du kit a permis de valider l'ensemble des tests.
-4. Le refactoring du TP6 : le déplacement de `predict.py` vers le paquet `sentiment_app/` tout en maintenant un fichier de compatibilité dans `src/` a nécessité d'ajuster les imports de l'API pour supprimer définitivement toute modification manuelle de `sys.path`.
+- **Paquet :** `src/sentiment_app/`, version `1.0.0` écrite une seule fois dans `pyproject.toml` (lue par `importlib.metadata`). La commande `sentiment "texte"` accepte `--json` et `--version`, et renvoie le code de sortie 2 pour un texte vide.
+- **Modèle embarqué :** la ligne `package-data` place `modele/*.joblib` dans la roue, et `importlib.resources` le retrouve où que le paquet soit installé. C'est le choix inverse de notre version 0.6.0, où le modèle restait à côté (`SENTIMENT_MODELE`). Embarquer le modèle rend la roue autonome, mais chaque nouveau modèle impose une nouvelle version du paquet. `scikit-learn` est figé en 1.5, car le fichier joblib n'est relisible qu'avec cette version.
+- **Vérification :** `scripts/verifier_livrable.py` construit un environnement neuf, y installe la roue (9 695 octets), lance les 6 tests de `test_paquet.py` sur le paquet installé, puis la commande : **Bilan : CONFORME**, sous Windows avec Python 3.11.9.
+- **Release :** l'étiquette `v1.0.0` désigne le commit `80f6e6b` ; la release joint la roue, l'archive source et le rapport. Depuis n'importe quel poste : `pip install https://github.com/ilyas701/sentiment-app/releases/download/v1.0.0/sentiment_app-1.0.0-py3-none-any.whl`, puis `sentiment "Livraison rapide, très satisfait"`, qui affiche `positive (confiance 77%)`.
 
-## 9. Ce que vous feriez autrement
+## 9. Ce qui a échoué et résolution des blocages
 
-Dans un contexte de production industrielle, nous mettrions en place :
-- Un système de gestion du cache Streamlit (`@st.cache_data`) pour éviter de recalculer inutilement les requêtes par lot lors des réexécutions de la page.
-- Une surveillance de la dérive des données (*data drift*) et des performances en temps réel avec la journalisation des prédictions.
-- Un ré-entraînement continu automatisé réinjectant périodiquement les avis étiquetés par la revue humaine (cas `INDETERMINE`) dans le jeu de données d'entraînement.
-- Un hébergement de la roue sur un registre privé (Artifactory ou PyPI privé) pour automatiser le déploiement sur les serveurs de production.
+1. **Chemins d'import** entre `src/`, `tests/`, `api/` et `ui/` (erreurs `ModuleNotFoundError`), résolus par `pythonpath` dans `pytest.ini` et l'ajout explicite de la racine à `sys.path`.
+2. **Conflits de versions** (`pyarrow`, `numpy<2`), résolus en figeant les dépendances dans `requirements.txt`.
+3. **Mauvais kit appliqué :** un ancien kit du TP 3, resté dans le dossier de travail, a écrasé `api/main.py` et `api/model.py`. Le commit du TP 2 nous a permis de tout restaurer avec `git restore .`.
+4. **`pytest.ini` trop permissif :** avec `pythonpath = . src`, le test du paquet installé lisait les sources au lieu de la roue, et le vérificateur échouait. Nous avons gardé `pythonpath = .`.
+5. **Ancien paquet encore installé :** la version 0.6.0, installée en mode éditable, aurait faussé les tests du nouveau paquet ; il a fallu la désinstaller (`pip uninstall`).
+6. **Dossier vide non suivi :** Git ne garde pas un dossier vide ; sur un clone neuf, `src/sentiment_app/modele/` manquait. Un fichier `.gitkeep` le conserve.
+7. **CI rouge après la fusion :** la CI installait `pytest` sans version, donc pytest 9, qui casse `test_lot_et_resume` (le modèle retiré par un test précédent n'était pas remis). Nous l'avons reproduit à l'identique, puis figé `pytest==8.3.*` comme dans `requirements.txt` : CI verte. Une dépendance non figée finit par casser.
+8. **Étiquette déplacée :** la fusion avec un commit du binôme a créé un nouveau commit ; il a fallu déplacer `v1.0.0` (`git tag -f`) et revérifier, car le vérificateur exige l'étiquette sur le dernier commit.
 
-## 10. Répartition du travail
+## 10. Ce que nous ferions autrement
+
+- Régler le seuil sur un jeu de validation distinct du jeu de test.
+- Mettre en cache les appels par lot dans Streamlit (`@st.cache_data`).
+- Surveiller la dérive des données et réinjecter les avis `INDETERMINE` étiquetés par les humains dans l'entraînement.
+- Distribuer le modèle séparément de la roue (registre de modèles), pour le mettre à jour sans republier le paquet.
+- Héberger l'interface : il faudrait aussi une API joignable depuis Internet, car le `localhost` d'un hébergeur n'est pas notre poste.
+
+## 11. Réponses aux questions de bilan
+
+1. **Où est le modèle ?** Pour l'API et Streamlit, dans `models/sentiment.joblib`, chargé par l'API au démarrage ; pour le paquet installé, à l'intérieur de la roue (`sentiment_app/modele/`).
+2. **Un score élevé sur un avis mal classé ?** Le modèle est sûr de lui et se trompe : l'abstention ne rattrape pas ces erreurs confiantes, seules de meilleures données ou un meilleur modèle le peuvent.
+3. **Pourquoi `INDETERMINE` n'est pas une erreur serveur ?** C'est une décision métier (le score est sous le seuil), renvoyée avec un statut 200 ; une erreur serveur (500, 503) signifie que le service n'a pas pu répondre.
+4. **Prouver que la roue est autonome ?** L'installer dans un environnement neuf, hors des sources, et y lancer les tests et la commande : c'est ce que fait le vérificateur (CONFORME).
+5. **Lancé, distribué, hébergé ?** L'API, Streamlit et le client web ont été **lancés en local** ; le paquet est **distribué** par la release GitHub ; rien n'est **hébergé** sur Internet.
+
+## 12. Répartition du travail
 
 | Membre | Ce qu'il a pris en charge |
 | --- | --- |
-| Ilyas (@ilyas701) | Conception du pipeline de modélisation (TP2), configuration des tests unitaires et de qualité (ruff, mypy, pre-commit - TP4), industrialisation de l'API FastAPI (`api/` - TP3), migration du paquet et de la CLI (TP6) et intégration de la CI sur GitHub Actions. |
-| Othman (@Othm4n) | Cadrage initial (TP1), développement du client HTTP et de l'interface Streamlit (`ui/` - TP5), validation des tests d'interface/client, construction de la roue `.whl`, exécution des essais hors dépôt (TP4-TP6) et rédaction des comptes-rendus. |
+| Ilyas (@ilyas701) | Pipeline de modélisation, tests de qualité (ruff, mypy, pre-commit), API FastAPI, paquet et CLI, CI GitHub Actions ; intégration des TP 2 à 4 du programme (API `/v1`, interface `/v1`, paquet 1.0.0, release). |
+| Othman (@Othm4n) | Cadrage initial, client HTTP et interface Streamlit, tests d'interface et du client, construction et essais de la roue hors dépôt, validation des métriques du TP 2 ; rédaction des comptes rendus. |
 
 ## Outils d'aide à la rédaction
 
-L'assistant d'IA a été utilisé pour structurer la rédaction technique et valider la cohérence des blocs Markdown, tandis que l'ensemble des résultats chiffrés, des matrices, des tests et du code source a été produit, exécuté et vérifié par nos soins sur nos environnements locaux.
+Un assistant d'IA (Claude) a été utilisé pour intégrer les kits des TP 2 à 4, diagnostiquer des erreurs (dont l'échec de la CI avec pytest 9) et rédiger une première version de ce compte rendu. Les commandes, les tests, les captures et le vérificateur ont été exécutés sur nos postes, et les résultats chiffrés de ce document en proviennent.
